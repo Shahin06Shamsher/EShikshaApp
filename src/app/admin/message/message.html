@@ -1,85 +1,105 @@
-<div class="container mb-5">
-    <div class="row">
-        <div >
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-header bg-white border-0 py-3">
-                    <h4 class="fw-bold m-0 text-primary">{{ activeTab | titlecase }}</h4>
-                </div>
+<div class="main-wrapper">
+  <header class="glass-header d-flex align-items-center px-4">
+    <div class="logo text-white fw-bold">Edu<span style="color: var(--neon-indigo);">Flow</span></div>
+    <div class="ms-auto user-profile bg-dark text-light border border-secondary shadow-sm">SS</div>
+  </header>
 
-                <div class="card-body p-4">
-                    <div class="chat-wrapper">
-                        <div class="chat-window bg-light rounded p-3 mb-3">
-                            <div *ngFor="let msg of chats" [ngClass]="msg.sender === 'You' ? 'text-end' : 'text-start'"
-                                class="mb-3">
-                                <div [ngClass]="msg.sender === 'You' ? 'bg-primary text-white' : 'bg-white shadow-sm'"
-                                    class="d-inline-block px-3 py-2 rounded-3 shadow-sm max-vw-75">
-                                    <p class="m-0">{{ msg.text }}</p>
-                                    <small class="d-block opacity-75 mt-1">{{ msg.time }}</small>
-                                </div>
-                            </div>
-                            <div class="d-flex align-items-end mb-3">
-                                <div class="flex-shrink-0 me-2">
-                                    <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center text-white"
-                                        style="width: 32px; height: 32px; font-size: 12px;">
-                                        IN
-                                    </div>
-                                </div>
-                                <div class="bg-white shadow-sm p-3 rounded-4 border-start border-4 border-primary"
-                                    style="max-width: 70%;">
-                                    <div class="d-flex justify-content-between align-items-center mb-1">
-                                        <strong class="small text-primary">Instructor (Online)</strong>
-                                        <span class="dot-online ml-1"></span>
-                                    </div>
-                                    <p class="m-0 small text-dark">Don't forget to check the new 'RxJS' resources in the
-                                        Announcements tab!</p>
-                                </div>
-                            </div>
-
-                            <div class="text-muted small italic ms-5 mb-3 animate-pulse">
-                                Instructor is typing...
-                            </div>
-                        </div>
-                        <div class="input-group">
-                            <input type="text" class="form-control border-0 shadow-sm" [(ngModel)]="newMessage"
-                                placeholder="Ask a doubt..." (keyup.enter)="sendMessage()">
-                            <button class="btn btn-primary px-4 shadow-sm" (click)="sendMessage()">Send</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
+  <div class="container-fluid py-4 h-100">
+    <div class="row g-4">
+      
+      <div class="col-lg-3">
+        <div class="nav-card p-3 shadow-lg">
+          <h6 class="text-muted small fw-bold mb-3 opacity-50">COMMUNICATION</h6>
+          <nav>
+            <button class="nav-btn" [class.active]="activeTab === 'notifications'" (click)="activeTab = 'notifications'">
+              Announcements
+            </button>
+            <button class="nav-btn" [class.active]="activeTab === 'messaging'" (click)="activeTab = 'messaging'">
+              AI Assistant
+            </button>
+            <button class="nav-btn" [class.active]="activeTab === 'forum'" (click)="activeTab = 'forum'">
+              Community Forum
+            </button>
+          </nav>
         </div>
-    </div>
-</div>
-<!--
-<div class="forum-section fade-in">
-  
-  <div class="card border-primary mb-4 shadow-sm">
-    <div class="card-body">
-      <h6 class="fw-bold text-primary mb-3">Start a New Discussion</h6>
-      <input type="text" class="form-control mb-2" [(ngModel)]="newTopicTitle" placeholder="Discussion Topic (e.g. Help with CSS Grid)">
-      <textarea class="form-control mb-2" rows="2" [(ngModel)]="newTopicContent" placeholder="Ask your question or share information..."></textarea>
-      <button class="btn btn-primary btn-sm px-4" (click)="postToForum()">Post to Forum</button>
-    </div>
+      </div>
+
+      <div class="col-lg-9">
+        <div class="content-card p-4 shadow-lg">
+          
+          <div *ngIf="activeTab === 'notifications'" class="fade-in">
+            <h4 class="text-white fw-bold mb-4">Latest Updates</h4>
+            <div *ngFor="let n of notifications" class="announcement-card p-3 rounded-4 mb-3">
+              <h6 class="fw-bold" [style.color]="n.type === 'info' ? 'var(--neon-cyan)' : n.type === 'warning' ? '#fbbf24' : 'var(--neon-rose)'">
+                {{n.title}}
+              </h6>
+              <p class="small text-white-50 mb-1">{{n.body}}</p>
+              <small class="text-muted fw-bold">{{n.time}}</small>
+            </div>
+          </div>
+
+          <div *ngIf="activeTab === 'messaging'" class="fade-in h-100 d-flex flex-column">
+            <h4 class="text-white fw-bold mb-3">AI Support Assistant</h4>
+            <div class="chat-box p-3 rounded-4 mb-3 flex-grow-1 overflow-auto" style="background: rgba(15, 23, 42, 0.5); min-height: 400px;">
+              <div *ngFor="let m of chats" [ngClass]="m.sender === 'Bot' ? 'bot-wrap' : 'user-wrap'" class="d-flex mb-3">
+                <div class="bubble p-3 shadow-sm">
+                  <p class="m-0 small text-white">{{m.text}}</p>
+                </div>
+              </div>
+              <div *ngIf="isTyping" class="text-muted small ms-2 animate-pulse">AI is typing...</div>
+            </div>
+            <div class="input-group p-2 rounded-pill bg-dark border border-secondary">
+              <input type="text" class="form-control border-0 bg-transparent text-white px-3" 
+                     [(ngModel)]="newMessage" (keyup.enter)="sendMessage()" placeholder="Type your doubt...">
+              <button class="btn btn-primary rounded-pill px-4" (click)="sendMessage()">Send</button>
+            </div>
+          </div>
+
+          <div *ngIf="activeTab === 'forum'" class="fade-in">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+              <h4 class="text-white fw-bold m-0">Forum Discussions</h4>
+              <button class="btn btn-sm btn-outline-primary rounded-pill px-3" (click)="isFormOpen = !isFormOpen">
+                {{ isFormOpen ? 'Close' : '+ New Post' }}
+              </button>
+            </div>
+
+            <div *ngIf="isFormOpen" class="mb-4 p-4 rounded-4 shadow-lg fade-in forum-form-container">
+  <div class="mb-3">
+    <label class="text-muted small fw-bold mb-2 d-block" style="color: white !important;">TOPIC TITLE</label>
+    <input type="text" 
+           class="form-control bg-dark text-light border-secondary custom-input" 
+           [(ngModel)]="newTopicTitle" 
+           placeholder="Enter the subject of your discussion...">
   </div>
 
-  <div class="forum-feed">
-    <div *ngFor="let post of forumPosts" class="card mb-3 border-0 shadow-sm forum-card">
-      <div class="card-body">
-        <div class="d-flex justify-content-between align-items-start">
-          <div>
-            <h5 class="card-title text-dark fw-bold mb-1">{{ post.topic }}</h5>
-            <p class="text-muted small mb-2">Posted by <span class="text-primary">{{ post.author }}</span> • {{ post.date }}</p>
+  <div class="mb-3">
+    <label class="text-muted small fw-bold mb-2 d-block" style="color: white !important;">DESCRIPTION</label>
+    <textarea class="form-control bg-dark text-light border-secondary custom-input" 
+              rows="4" 
+              [(ngModel)]="newTopicContent" 
+              placeholder="Provide more details about your topic here..."></textarea>
+  </div>
+
+  <button class="btn btn-primary rounded-pill w-100 fw-bold py-2" (click)="postToForum()">
+    Post to Community
+  </button>
+</div>
+<div *ngFor="let p of forumPosts" class="forum-item p-3 mb-3 rounded-4">
+              <div class="d-flex justify-content-between">
+                <div>
+                  <h6 class="fw-bold m-0" style="color: var(--neon-indigo);">{{p.topic}}</h6>
+                  <small class="text-muted">By {{p.author}} • {{p.date}}</small>
+                </div>
+                <span class="badge bg-dark border border-secondary text-white-50 px-3 py-2 rounded-pill">
+                  {{p.replies}} Replies
+                </span>
+              </div>
+
+            
           </div>
-          <span class="badge bg-light text-primary border border-primary">{{ post.replies }} Replies</span>
-        </div>
-        <p class="card-text text-secondary">{{ post.content }}</p>
-        <div class="d-flex gap-3">
-          <button class="btn btn-link p-0 text-decoration-none small text-primary"><i class="bi bi-reply"></i> Reply</button>
-          <button class="btn btn-link p-0 text-decoration-none small text-secondary"><i class="bi bi-hand-thumbs-up"></i> Helpful</button>
+
         </div>
       </div>
     </div>
   </div>
-
 </div>
--->

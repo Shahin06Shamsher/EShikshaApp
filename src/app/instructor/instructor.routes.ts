@@ -9,6 +9,6 @@ export const instructorRoutes : Routes = [
         {path:"assignments", loadComponent:()=>import("./manage-assignemts/manage-assignemts").then(r=>r.ManageAssignemts)},
         {path:"quizes", loadComponent:()=>import("./quizes/quizes").then(r=>r.Quizes)},
         {path:"managecourse", loadComponent:()=>import("../components/manage-course/manage-course").then(r=>r.ManageCourse)},
-        {path:"communication", loadComponent:()=>import("../admin/message/message").then(r=>r.Message)}
+        {path:"communication", loadComponent:()=>import("../admin/message/message").then(r=>r.CommunicationModuleComponent)}
     ]}
 ]

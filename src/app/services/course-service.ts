@@ -14,7 +14,8 @@ export class CourseService {
   apiServices = inject(ApiServices);
 
   instructorCourses$ = new BehaviorSubject<Course[]|null>(null);
-  
+  studentCourses$=new BehaviorSubject<Course[]|null>(null);
+
   catalogCourses$ = new BehaviorSubject<Course[]>([]);
 
   getAllCourses(title?:string,instructor?:string):Observable<{result:Course[],message:string}>{
@@ -39,9 +40,32 @@ export class CourseService {
     return this.httpClient.patch<{result:{course:Course}, message:string}>(this.apiServices.getFullUrl(`instructor/course/${courseId}`),updatedData);
   }
   
-  // deleteCourse(courseId:string)<>{}
+  deleteCourse(courseId:string):Observable<{result: { course: Course }; message: string }>{
+    return this.httpClient.delete<{result:{ course: Course }; message: string }>(this.apiServices.getFullUrl(`instructor/course/${courseId}`));
+}
   
+
+//ENROLLMENT============
+
+  enrollCourse(courseId:string):Observable<{result:{course:Course}, message:string}>{
+    return this.httpClient.post<{result:{course:Course}, message:string}>(this.apiServices.getFullUrl(`student/course/${courseId}/enroll`),
+     {}, // body (empty object if no payload)
+    { responseType: 'json' } // ensure JSON response
+
+  );
+  }
+
+  getEnrolledCourse(studentId?:string):Observable<{result:Course[],message:string}>{
+    let params = new HttpParams();
+    if(studentId){
+      params=params.set("student",studentId);
+    }
+    return this.httpClient.get<{result:Course[],message:string}>(this.apiServices.getFullUrl(`student/course/${studentId}/enroll`));
+  }
+
+  //unEnrollCourse()
   getCourseEndpoint(endpoint:string):string{
     return `course/${endpoint}`;
   }
+
 }

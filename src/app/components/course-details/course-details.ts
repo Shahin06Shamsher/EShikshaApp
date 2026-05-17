@@ -5,6 +5,7 @@ import { Course } from '../../models/course';
 import { Assignments } from '../../models/assignments';
 import { DatePipe } from '@angular/common';
 import { AssignmentService } from '../../services/assignment-service';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-course-details',
@@ -16,9 +17,13 @@ export class CourseDetails {
   activatedRoute = inject(ActivatedRoute);
   courseService = inject(CourseService);
   assignmentService=inject(AssignmentService);
-
+  private toastService=inject(ToastrService);
+  
   router = inject(Router);
   courseId1!: string;
+
+  isEnrolled:boolean=false;
+  enrolledCourseList = signal<[]>([]);
 
   selectedCourse = signal<{ course: Course, assignments: Assignments[], quizzes:any[] } | null>(null);
 
@@ -36,9 +41,24 @@ export class CourseDetails {
 
   // selectedCourse = signal(this.MOCK_SELECTED_COURSE);
   enroll() {
-    alert(`Successfully enrolled in ${this.selectedCourse()?.course?.title}!`);
+    this.courseService.enrollCourse(this.courseId1).subscribe({
+      next:res=>{
+        console.log(res);
+        this.isEnrolled=true;
+        const courses=this.enrolledCourseList ();
+        // courses.push(res.result.course);
+        this.enrolledCourseList.set(courses);
+        this.toastService.success(`Successfully enrolled in ${this.selectedCourse()?.course?.title}!`);
+      },
+      error:err=>{
+              this.toastService.error(err.error.message??"Internal Server Error");
+      }
+    })
   }
 
+  unrenroll(){
+    
+  }
   goToSubmitAssignment(assignment:Assignments) {
     this.assignmentService.selectedAssignment$.next(assignment);
 

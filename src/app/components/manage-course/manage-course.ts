@@ -64,7 +64,7 @@ export class ManageCourse {
       courseDescription:description??"",
       image:imageUrl??""
     }
-  
+    
     if(this.isEditMode()){
       this.courseService.updateCourse(this.courseId,updatedData ).subscribe({
          next:res=>{

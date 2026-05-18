@@ -6,6 +6,7 @@ import { map } from 'rxjs';
 import { AssignmentService } from '../../services/assignment-service';
 import { ToastrService } from 'ngx-toastr';
 import { Assignments } from '../../models/assignments';
+import { AssignmentsResult } from '../../models/assignmentResult';
 
 @Component({
   selector: 'app-manage-assignemts',

@@ -5,6 +5,5 @@ export class Assignments{
         public totalMarks:number,
         public courseId:number,
         public file:string,
-        public _id?:string,
     ){}
 }

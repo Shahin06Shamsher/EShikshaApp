@@ -1,4 +1,19 @@
 /* Container Animation */
+:root {
+  --neon-cyan: #22d3ee;
+  --neon-rose: #f43f5e;
+}
+
+.announcement-card {
+  background: rgba(30, 41, 59, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: 0.3s;
+}
+
+.announcement-card:hover {
+  border-color: var(--neon-cyan);
+  transform: scale(1.02);
+}
 .fade-in {
   animation: slideUp 0.4s ease-out;
 }

@@ -1,18 +1,40 @@
-<div class="fade-in">
-    <h4>ANNOUNCEMENT 📢 </h4>
-  <h4 class="text-white fw-bold mb-4">Latest Updates</h4>
-  
-  <div *ngFor="let n of notifications" class="announcement-card p-3 rounded-4 mb-3">
-    <h6 class="fw-bold" 
-        [style.color]="n.type === 'info' ? 'var(--neon-cyan)' : n.type === 'warning' ? '#fbbf24' : 'var(--neon-rose)'">
-      {{n.title}}
-    </h6>
-    
-    <p class="small text-white-50 mb-1">{{n.body}}</p>
-    
-    <div class="d-flex justify-content-between align-items-center">
-      <small class="text-muted fw-bold">{{n.time}}</small>
-      <span class="status-dot" [ngClass]="'dot-' + n.type"></span>
+<div class="announcement-container mt-4 p-4">
+  <h3 class="mb-4 text-dark">ANNOUNCEMENT 📢</h3>
+
+  <!-- 1. INSTRUCTOR SECTION: Only shows if isInstructor is true -->
+  <div *ngIf="isInstructor" class="card shadow-sm mb-5 p-3 border-0 bg-light">
+    <h5 class="text-primary mb-3">Create New Announcement</h5>
+    <div class="form-group">
+      <textarea 
+        class="form-control mb-2" 
+        rows="3" 
+        placeholder="Type your announcement here..."
+        [(ngModel)]="newAnnouncementText">
+      </textarea>
+      <button 
+        class="btn btn-success px-4" 
+        (click)="postAnnouncement()"
+        [disabled]="!newAnnouncementText.trim()">
+        Broadcast to Students
+      </button>
+    </div>
+  </div>
+
+  <!-- 2. ANNOUNCEMENT LIST: Visible to everyone -->
+  <div class="announcement-list">
+    <div *ngFor="let note of notifications()" class="card mb-3 shadow-sm border-start border-primary border-4">
+      <div class="card-body">
+        <div class="d-flex justify-content-between">
+          <h6 class="card-title text-muted mb-1">By {{ note.instructorName }}</h6>
+          <span class="badge bg-secondary">{{ note.date }}</span>
+        </div>
+        <p class="card-text text-dark">{{ note.content }}</p>
+      </div>
+    </div>
+
+    <!-- Empty state if no announcements -->
+    <div *ngIf="notifications().length === 0" class="text-center py-5">
+      <p class="text-muted">No announcements posted yet.</p>
     </div>
   </div>
 </div>

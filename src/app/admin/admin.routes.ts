@@ -11,7 +11,11 @@ export const adminRoutes : Routes = [
         {path:"message", loadComponent:()=>import("./message/message").then(r=>r.CommunicationModuleComponent)},
         {path:"announcements",loadComponent:()=>import("../components/announcements/announcements").then(r=>r.Announcements)},
         { path: "aiassistant",  loadComponent: () => import("../components/ai-assistant/ai-assistant").then(m => m.AiAssistantComponent)},
+        {path:"community-forum",loadComponent:()=>import("../components/community-forum/community-forum").then(r=>r.CommunityForumComponent)},
+        {path:"announcements",loadComponent:()=>import("../components/announcements/announcements").then(r=>r.Announcements)},
+        { path: "aiassistant", loadComponent: () => import("../components/ai-assistant/ai-assistant").then(r => r.AiAssistantComponent) },
         {path:"community-forum",loadComponent:()=>import("../components/community-forum/community-forum").then(r=>r.CommunityForumComponent)}
+
 
     ]}
 ]

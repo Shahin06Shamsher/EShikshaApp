@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { Component, OnInit, inject, signal } from '@angular/core';
+import { CommonModule } from '@angular/common'; // Fixes [ngClass] error
+import { FormsModule } from '@angular/forms'; // Fixes [(ngModel)] error
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-community-forum',
@@ -9,52 +10,62 @@ import { FormsModule } from '@angular/forms';
   templateUrl: './community-forum.html',
   styleUrls: ['./community-forum.css']
 })
-export class CommunityForumComponent {
-  isFormOpen: boolean = false;
-  newPostTitle: string = '';
-  newPostContent: string = '';
+export class CommunityForumComponent implements OnInit {
+  private http = inject(HttpClient);
+  
+  // Using signals to match your HTML's posts() call
+  posts = signal<any[]>([]);
+  isFormOpen = false;
+  newPostTitle = '';
+  newPostContent = '';
 
-  posts = [
-    { 
-      id: 1, 
-      title: 'RxJS error handling in Service', 
-      author: 'Rahul S.', 
-      date: 'Yesterday', 
-      replies: 2, 
-      category: 'Technical',
-      content: 'I am struggling with catching errors in my pipe... any tips?'
-    },
-    { 
-      id: 2, 
-      title: 'Welcome to the May Batch!', 
-      author: 'Admin', 
-      date: '1 week ago', 
-      replies: 15, 
-      category: 'General',
-      content: 'Glad to have you all here. Let’s build something great.'
-    }
-  ];
+  ngOnInit() {
+    this.loadPosts();
+  }
+
+  loadPosts() {
+    this.http.get<any[]>('http://localhost:3000/api/forum').subscribe({
+      next: (data) => this.posts.set(data),
+      error: (err) => console.error("Server connection lost!", err)
+    });
+  }
 
   toggleForm() {
     this.isFormOpen = !this.isFormOpen;
   }
 
   submitPost() {
-    if (!this.newPostTitle || !this.newPostContent) return;
+    if (!this.newPostTitle.trim() || !this.newPostContent.trim()) return;
 
     const newEntry = {
-      id: this.posts.length + 1,
       title: this.newPostTitle,
-      author: 'Shahin Shamsher', // Your name for the demo
-      date: 'Just now',
-      replies: 0,
-      category: 'Question',
-      content: this.newPostContent
+      content: this.newPostContent,
+      author: 'Shahin Shamsher',
+      category: 'Technical' // Matches your 'bg-info' logic in HTML
     };
 
-    this.posts.unshift(newEntry); // Add to top of list
-    this.newPostTitle = '';
-    this.newPostContent = '';
-    this.isFormOpen = false;
+    this.http.post('http://localhost:3000/api/forum', newEntry).subscribe({
+      next: () => {
+        this.newPostTitle = '';
+        this.newPostContent = '';
+        this.isFormOpen = false;
+        this.loadPosts();
+      }
+    });
+  }
+
+  // Fixes the "Property postReply does not exist" error
+  postReply(postId: any, replyText: string) {
+    if (!replyText.trim()) return;
+
+    const replyData = {
+      author: 'Shahin Shamsher',
+      text: replyText
+    };
+
+    this.http.post(`http://localhost:3000/api/forum/${postId}/reply`, replyData).subscribe({
+      next: () => this.loadPosts(),
+      error: (err) => console.error("Reply failed", err)
+    });
   }
 }

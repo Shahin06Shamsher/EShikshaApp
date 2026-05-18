@@ -8,6 +8,10 @@ export const studentRoutes : Routes = [
         {path:"settings", loadComponent:()=>import("../components/settings/settings").then(r=>r.Settings)},
         {path:"enrolledcourses", loadComponent:()=>import("./enrolled-courses/enrolled-courses").then(r=>r.EnrolledCourses)},
         {path:"enrolledcourses/result", loadComponent:()=>import("./result/result").then(r=>r.Result)},
-        {path:"enrolledcourses/course", loadComponent:()=>import("./course-content/course-content").then(r=>r.CourseContent)}
+        {path:"enrolledcourses/course", loadComponent:()=>import("./course-content/course-content").then(r=>r.CourseContent)},
+         {path:"announcement",loadComponent:()=>import("../components/announcements/announcements").then(r=>r.Announcements)},
+        { path: "aiassistant", loadComponent: () => import("../components/ai-assistant/ai-assistant").then(r => r.AiAssistantComponent) },
+        {path:"community-forum",loadComponent:()=>import("../components/community-forum/community-forum").then(r=>r.CommunityForumComponent)}
+
     ]}
 ]

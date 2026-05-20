@@ -11,9 +11,10 @@ export const studentRoutes : Routes = [
         {path:"enrolledcourses/result", loadComponent:()=>import("./result/result").then(r=>r.Result)},
         {path:"enrolledcourses/course", loadComponent:()=>import("./course-content/course-content").then(r=>r.CourseContent)},
          {path:"announcement",loadComponent:()=>import("../components/announcements/announcements").then(r=>r.Announcements)},
-        { path: "aiassistant", loadComponent: () => import("../components/ai-assistant/ai-assistant").then(r => r.AiAssistantComponent) },
+        //{ path: "aiassistant", loadComponent: () => import("../components/ai-assistant/ai-assistant").then(r => r.AiAssistantComponent) },
         {path:"community-forum",loadComponent:()=>import("../components/community-forum/community-forum").then(r=>r.CommunityForumComponent)},
         {path:"enrolledcourses/coursedetails/:courseId", loadComponent:()=>import("../components/course-details/course-details").then(r=>r.CourseDetails)},
         {path:"enrolledcourses/coursedetails/:courseId/assignment/:id",loadComponent:()=>import("../student/student-assignment/student-assignment").then(r=>r.StudentAssignment)},
+        {path:"Chat-box.Component",loadComponent:()=>import("../components/chat-box/chat-box.component").then(r=>r.ChatBoxComponent)},
     ]}
 ]

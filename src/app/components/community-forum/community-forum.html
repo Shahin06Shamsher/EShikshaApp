@@ -24,22 +24,21 @@
             {{post.category}}
           </span>
           <h5 class="text-white fw-bold mb-1">{{post.title}}</h5>
-          <p class="text-white opacity-75">{{post.content}}</p>
-          <p class="text-white-50 small mb-0">By {{post.author}} • {{post.date}}</p>
+          <p class="text-white opacity-75">{{post.description}}</p>
+          <p class="text-white-50 small mb-0">By {{ post.users||post.author}} • {{post.date}}</p>
         </div>
-        <div class="reply-count text-center p-2 rounded-3">
+        <div class="reply-count text-center p-2 rounded-3" style="color: #ffffff !important">
           <span class="d-block text-white fw-bold">{{post.replies?.length || 0}}</span>
-          <small class="text-muted">Replies</small>
+          <small class="text-muted" style="color: #64ffda !important">Replies</small>
         </div>
       </div>
 
       <hr class="border-secondary opacity-25">
 
       <div class="replies-section ms-4 mb-3" *ngIf="post.replies?.length">
-        <div *ngFor="let reply of post.replies" class="reply-bubble p-2 mb-2 rounded-3">
-          <strong class="text-info small">{{reply.author}}:</strong>
-          <span class="text-white-50 small ms-2">{{reply.text}}</span>
-        </div>
+        <div *ngFor="let rep of post.replies" class="reply-box text-light py-1">
+  <strong class="text-info">{{ rep.user }}</strong> : <span class="text-white-50">{{ rep.reply }}</span>
+</div>
       </div>
 
       <div class="input-group input-group-sm mt-3">

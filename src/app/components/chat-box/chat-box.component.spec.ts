@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { AiAssistantComponent } from './ai-assistant';
+import { ChatBoxComponent } from './chat-box.component';
 
-describe('AiAssistantComponent', () => {
-  let component: AiAssistantComponent;
-  let fixture: ComponentFixture<AiAssistantComponent>;
+describe('ChatBoxComponent', () => {
+  let component: ChatBoxComponent;
+  let fixture: ComponentFixture<ChatBoxComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AiAssistantComponent]
+      imports: [ChatBoxComponent]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(AiAssistantComponent);
+    fixture = TestBed.createComponent(ChatBoxComponent);
     component = fixture.componentInstance;
     await fixture.whenStable();
   });

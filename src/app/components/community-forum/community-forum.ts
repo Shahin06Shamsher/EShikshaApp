@@ -1,32 +1,43 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common'; // Fixes [ngClass] error
-import { FormsModule } from '@angular/forms'; // Fixes [(ngModel)] error
-import { HttpClient } from '@angular/common/http';
+import { CommonModule } from '@angular/common'; 
+import { FormsModule } from '@angular/forms'; 
+import { HttpClient } from '@angular/common/http'; 
 
 @Component({
   selector: 'app-community-forum',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule], 
   templateUrl: './community-forum.html',
   styleUrls: ['./community-forum.css']
 })
 export class CommunityForumComponent implements OnInit {
-  private http = inject(HttpClient);
+
   
-  // Using signals to match your HTML's posts() call
+  private http = inject(HttpClient);
+
   posts = signal<any[]>([]);
   isFormOpen = false;
   newPostTitle = '';
   newPostContent = '';
 
   ngOnInit() {
-    this.loadPosts();
+    this.loadForumPosts(); 
   }
 
-  loadPosts() {
-    this.http.get<any[]>('http://localhost:3000/api/forum').subscribe({
-      next: (data) => this.posts.set(data),
-      error: (err) => console.error("Server connection lost!", err)
+  loadForumPosts() {
+    this.http.get<any>('http://localhost:8000/api/forum').subscribe({
+      next: (response) => {
+        console.log("Forum response dump:", response);
+        
+        if (response && response.result) {
+          this.posts.set(response.result);
+        } else if (Array.isArray(response)) {
+          this.posts.set(response);
+        }
+      },
+      error: (err) => {
+        console.error('Server connection lost!', err);
+      }
     });
   }
 
@@ -35,37 +46,57 @@ export class CommunityForumComponent implements OnInit {
   }
 
   submitPost() {
-    if (!this.newPostTitle.trim() || !this.newPostContent.trim()) return;
+    if (!this.newPostTitle.trim() || !this.newPostContent.trim()) {
+      return;
+    }
+
+    
+    const loggedInUser = localStorage.getItem('username') || 
+                         sessionStorage.getItem('name') || 
+                         localStorage.getItem('user_name') || 
+                         "Shahin Shamsher"; 
 
     const newEntry = {
       title: this.newPostTitle,
-      content: this.newPostContent,
-      author: 'Shahin Shamsher',
-      category: 'Technical' // Matches your 'bg-info' logic in HTML
+      description: this.newPostContent,
+      users: loggedInUser
     };
 
-    this.http.post('http://localhost:3000/api/forum', newEntry).subscribe({
-      next: () => {
+    console.log("Submitting custom payload to backend:", newEntry);
+
+    this.http.post<any>('http://localhost:8000/api/forum', newEntry).subscribe({
+      next: (response) => {
+        console.log("Posted successfully!", response);
         this.newPostTitle = '';
         this.newPostContent = '';
         this.isFormOpen = false;
-        this.loadPosts();
+        this.loadForumPosts();
+      },
+      error: (err) => {
+        console.error("Still throwing bad request. Response from backend console was:", err);
       }
     });
   }
 
-  // Fixes the "Property postReply does not exist" error
   postReply(postId: any, replyText: string) {
     if (!replyText.trim()) return;
 
+    
     const replyData = {
-      author: 'Shahin Shamsher',
-      text: replyText
+      reply: replyText,
+      user: "Shahin Shamsher" 
     };
 
-    this.http.post(`http://localhost:3000/api/forum/${postId}/reply`, replyData).subscribe({
-      next: () => this.loadPosts(),
-      error: (err) => console.error("Reply failed", err)
+    console.log("Replying to post ID:", postId, "with body:", replyData);
+
+    this.http.post<any>(`http://localhost:8000/api/forum/${postId}/reply`, replyData).subscribe({
+      next: (response) => {
+        console.log("Reply added successfully!", response);
+        this.loadForumPosts(); 
+      },
+      error: (err) => {
+        console.error("Reply transmission failed. Error object details:", err);
+      }
     });
   }
 }

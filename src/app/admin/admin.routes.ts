@@ -8,14 +8,10 @@ export const adminRoutes : Routes = [
         {path:"manageusers", loadComponent:()=>import("./users/users").then(r=>r.Users)},
         {path:"settings", loadComponent:()=>import("../components/settings/settings").then(r=>r.Settings)},
         {path:"coursedetails/:name", loadComponent:()=>import("../components/course-details/course-details").then(r=>r.CourseDetails)},
-        {path:"message", loadComponent:()=>import("./message/message").then(r=>r.CommunicationModuleComponent)},
         {path:"announcements",loadComponent:()=>import("../components/announcements/announcements").then(r=>r.Announcements)},
-        { path: "aiassistant",  loadComponent: () => import("../components/ai-assistant/ai-assistant").then(m => m.AiAssistantComponent)},
         {path:"community-forum",loadComponent:()=>import("../components/community-forum/community-forum").then(r=>r.CommunityForumComponent)},
         {path:"announcements",loadComponent:()=>import("../components/announcements/announcements").then(r=>r.Announcements)},
-        { path: "aiassistant", loadComponent: () => import("../components/ai-assistant/ai-assistant").then(r => r.AiAssistantComponent) },
-        {path:"community-forum",loadComponent:()=>import("../components/community-forum/community-forum").then(r=>r.CommunityForumComponent)}
-        {path:"coursecatalog/coursedetails/:courseId", loadComponent:()=>import("../components/course-details/course-details").then(r=>r.CourseDetails)},
-        {path:"message", loadComponent:()=>import("./message/message").then(r=>r.Message)}
+        {path:"community-forum",loadComponent:()=>import("../components/community-forum/community-forum").then(r=>r.CommunityForumComponent)},
+        {path:"coursecatalog/coursedetails/:courseId", loadComponent:()=>import("../components/course-details/course-details").then(r=>r.CourseDetails)}
     ]}
 ]

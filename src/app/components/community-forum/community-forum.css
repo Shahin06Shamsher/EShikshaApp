@@ -18,10 +18,10 @@
   border-color: #818cf8;
 }
 
-/* --- NEW: Public Replies Styling --- */
+
 
 .replies-section {
-  border-left: 2px solid rgba(129, 140, 248, 0.3); /* Subtle neon vertical line */
+  border-left: 2px solid rgba(129, 140, 248, 0.3); 
   padding-left: 1rem;
   max-height: 300px;
   overflow-y: auto;
@@ -38,10 +38,10 @@
 }
 
 .text-info {
-  color: #22d3ee !important; /* Neon Cyan for authors */
+  color: #22d3ee !important; 
 }
 
-/* --- NEW: Reply Input Styling --- */
+
 
 .input-group .form-control {
   background: rgba(15, 23, 42, 0.9) !important;
@@ -62,7 +62,7 @@
   padding: 0 1.5rem;
 }
 
-/* Keep your existing count and neon button styles */
+
 .reply-count {
   background: rgba(15, 23, 42, 0.8);
   min-width: 65px;
@@ -85,4 +85,13 @@
   background: #1e293b;
   border: 1px solid #334155;
   box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+.replies-counter-box h4 {
+    color: #ffffff !important; 
+}
+
+.replies-counter-box small, 
+.replies-counter-box span {
+    color: #cbd5e1 !important; 
 }

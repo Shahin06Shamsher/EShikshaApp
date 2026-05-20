@@ -48,18 +48,21 @@
     <div class="card-body">
       <div class="d-flex justify-content-between align-items-center mb-2">
         <h6 class="card-title text-primary fw-bold mb-0">
-          Course ID Channel: {{ note.course }}
+          Course : {{ note?.course?.title }} -- {{note?.course?.category}}
+          @if(note?.instructor){
+            <span class="bg-warning p-1 rounded-3 text-dark text-muted">By {{note?.instructor?.name}}</span>
+          }
         </h6>
-        <span class="badge bg-light text-muted border" *ngIf="note.createdAt">
-          {{ note.createdAt | date:'mediumDate' }}
+        <span class="badge bg-light text-muted border" *ngIf="note?.createdAt">
+          {{ note?.createdAt | date:'mediumDate' }}
         </span>
       </div>
       
-      <p class="card-text text-dark fs-6 mt-1 mb-0">{{ note.message }}</p>
+      <p class="card-text text-dark fs-6 mt-1 mb-0">{{ note?.message }}</p>
     </div>
   </div>
 
-  <div *ngIf="notifications().length === 0" class="text-center py-5 border rounded bg-light">
+  <div *ngIf="notifications()?.length === 0" class="text-center py-5 border rounded bg-light">
     <p class="text-muted mb-0">No announcements posted yet.</p>
   </div>
 </div>

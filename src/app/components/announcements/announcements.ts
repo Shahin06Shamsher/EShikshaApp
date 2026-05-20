@@ -9,6 +9,8 @@ import { map } from 'rxjs';
 import { AssignmentService } from '../../services/assignment-service';
 import { ToastrService } from 'ngx-toastr';
 import { Assignments } from '../../models/assignments';
+import { AnnouncementService } from '../../services/announcement-service';
+import { isArray } from 'chart.js/helpers';
 
 
 @Component({
@@ -19,17 +21,27 @@ import { Assignments } from '../../models/assignments';
   styleUrls: ['./announcements.css']
 })
 export class Announcements implements OnInit {
-  private http = inject(HttpClient);
   private userService = inject(UserService);
   private fb = inject(FormBuilder);
   private courseService = inject(CourseService);
   private toastService = inject(ToastrService);
+  private annnouncementService = inject(AnnouncementService);
 
-  notifications = signal<any[]>([]);
+  notifications = signal<{
+  message:string,
+  course:{
+    title:string,
+    category:string
+  },
+  createdAt:Date,
+  instructor?:{
+    name?:string
+  }
+}[]|null>(null);
+
   instructorCourses = signal<{ id: string, title: string, category: string }[]>([]);
   
   announcementForm!: FormGroup; 
-  private apiUrl = 'http://localhost:8000/api/announcements';
   isInstructor = false; 
 
   ngOnInit() {
@@ -40,13 +52,7 @@ export class Announcements implements OnInit {
     });
 
   
-    this.courseService.instructorCourses$
-      .pipe(
-        map((courseArray) => {
-          if (!courseArray) return [];
-          return courseArray.map(c => ({ id: c._id ?? "", title: c.title, category: c.category }));
-        })
-      )
+    this.courseService.instructorCoursesList$
       .subscribe(courses => {
         if (courses) this.instructorCourses.set(courses);
       });
@@ -54,75 +60,54 @@ export class Announcements implements OnInit {
     
     this.userService.activeUser$.subscribe(user => {
       this.isInstructor = user?.role === "INSTRUCTOR";
-      this.loadAnnouncements();
+      if(this.isInstructor){
+         this.announcementForm.get('courseId')?.valueChanges.subscribe(value=>{
+          if(!value)return;
+          this.annnouncementService.loadInstructorAnnouncements(value).subscribe({
+            next:res=>{
+              this.notifications.set(res.result);
+              console.log(res.result);
+            },
+            error:err=>{
+              console.log(err);
+            }
+          })
+          
+        })
+      }else{
+        this.annnouncementService.loadStudentAnnouncements().subscribe({
+          next:res=>{
+            this.notifications.set(res.result);
+          },
+          error:err=>{
+            console.log(err);
+          }
+        })
+      }
     });
+
+   
   }
 
   getCourseName(id: string) {
     return this.instructorCourses().find(c => c.id == id)?.title || 'Selected Course';
   }
 
-  /*loadAnnouncements() {
-    this.http.get<any[]>(this.apiUrl).subscribe({
-      next: (data) => this.notifications.set(data),
-      error: (err) => console.error('Could not load announcements', err)
-    });
-  }*/
- /*loadAnnouncements() {
-  // Angular GET request hit karega backend standard endpoint par
-  this.http.get<any>(this.apiUrl).subscribe({
-    next: (response) => {
-      // Kyunki backend AppResponse object bhejta hai, data nikalne ke liye response.data use hoga
-      if (response && response.data) {
-        this.notifications.set(response.data); 
-      } else if (Array.isArray(response)) {
-        this.notifications.set(response); // Fallback agar direct array aaye toh
-      }
-    },
-    error: (err) => {
-      console.error('Could not load announcements', err);
-    }
-  });
-}*/
-loadAnnouncements() {
-  this.http.get<any>(this.apiUrl).subscribe({
-    next: (response) => {
-      console.log("Full Object Dump Bhai:", response);
-      
-      if (response && response.result && Array.isArray(response.result)) {
-        console.log("Perfect!:", response.result);
-        this.notifications.set(response.result); 
-      } 
-      
-      else if (response && Array.isArray(response)) {
-        this.notifications.set(response); 
-      } 
-      else {
-        console.warn("format is not matching!");
-      }
-    },
-    error: (err) => console.error('Could not load announcements', err)
-  });
-}
-
   postAnnouncement() {
     if (this.announcementForm.invalid) return;
 
-    const payload = {
-      message: this.announcementForm.value.messageText,
-      course: this.announcementForm.value.courseId 
-    };
-
-    this.http.post(this.apiUrl, payload).subscribe({
+    this.annnouncementService.postAnnouncement(this.announcementForm.value.courseId, {message:this.announcementForm.value.messageText}).subscribe({
       next: (res) => {
+        console.log(res);
         this.announcementForm.reset({ courseId: '', messageText: '' });
-        this.loadAnnouncements(); 
+        this.notifications.set([res.result, ...this.notifications()??[]])
         this.toastService.success("Announcement broadcasted successfully!");
       },
       error: (err) => {
         console.error('Failed to post announcement', err);
         this.toastService.error(err.error?.message || "Failed to post announcement");
       }
-    });
+    })
+
   }
 }

@@ -2,6 +2,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common'; 
 import { FormsModule } from '@angular/forms'; 
 import { HttpClient } from '@angular/common/http'; 
+import { UserService } from '../../services/user-service';
 
 @Component({
   selector: 'app-community-forum',
@@ -12,16 +13,20 @@ import { HttpClient } from '@angular/common/http';
 })
 export class CommunityForumComponent implements OnInit {
 
-  
+  private userService = inject(UserService);
   private http = inject(HttpClient);
 
   posts = signal<any[]>([]);
   isFormOpen = false;
   newPostTitle = '';
   newPostContent = '';
+  userRole = "";
 
   ngOnInit() {
-    this.loadForumPosts(); 
+    this.loadForumPosts();
+    this.userService.activeUser$.subscribe(res=>{
+      this.userRole = res?.role??'';
+    })
   }
 
   loadForumPosts() {
@@ -50,16 +55,10 @@ export class CommunityForumComponent implements OnInit {
       return;
     }
 
-    
-    const loggedInUser = localStorage.getItem('username') || 
-                         sessionStorage.getItem('name') || 
-                         localStorage.getItem('user_name') || 
-                         "Shahin Shamsher"; 
-
     const newEntry = {
       title: this.newPostTitle,
       description: this.newPostContent,
-      users: loggedInUser
+      users: this.userRole
     };
 
     console.log("Submitting custom payload to backend:", newEntry);
@@ -84,7 +83,7 @@ export class CommunityForumComponent implements OnInit {
     
     const replyData = {
       reply: replyText,
-      user: "Shahin Shamsher" 
+      user: this.userRole
     };
 
     console.log("Replying to post ID:", postId, "with body:", replyData);

@@ -59,21 +59,22 @@ export class ManageCourse {
     const {title,category,description ,imageUrl}=this.courseForm.value;
 
     const updatedData={
-      courseName:title??"",
-      coursecategory:category??"",
-      courseDescription:description??"",
-      image:imageUrl??""
+      title:title??"",
+      category:category??"",
+      description:description??"",
+      imageUrl:imageUrl??""
     }
     
     if(this.isEditMode()){
-      this.courseService.updateCourse(this.courseId,updatedData ).subscribe({
+      this.courseService.updateCourse(this.courseId, updatedData ).subscribe({
          next:res=>{
-          console.log(res);
-          const updatedCourse=res.result.course;
-          console.log(updatedCourse);
-          const courses=this.courseList().map(c =>c._id===updatedCourse._id?updatedCourse:c
-          )
-         this.courseList.set(courses);
+          console.log("this is result:");
+          console.log(res.result);
+          this.courseList.update(cArr=>cArr.map(c=>{
+          if(c._id==res.result._id) return res.result;  
+          return c; 
+          }))
+
           this.toastService.success(res.message);
           this.resetForm();
         },
@@ -116,7 +117,8 @@ export class ManageCourse {
     this.courseForm.patchValue({
       title: course.title,
       category: course.category,
-      description: course.description
+      description: course.description,
+      imageUrl:course.imageUrl
     });
     console.log(course);
     console.log(course._id);
@@ -124,10 +126,16 @@ export class ManageCourse {
     this.courseId=course._id;
   }
    
-  deleteCourse(name: string) {
-    // this.removeCourse(name);
-    // if (this.oldCourseName === name) this.resetForm();
-    console.log(name);
+  deleteCourse(id: string) {
+    this.courseService.deleteCourse(id).subscribe({
+      next:res=>{
+        this.courseList.update(cArr=>cArr.filter(c=>c._id!==id))
+        this.toastService.success(res.message);
+      },
+      error:err=>{
+        this.toastService.error(err.error.message);
+      }
+    })
   }
   
   resetForm() {

@@ -59,6 +59,7 @@ export class Settings {
     }
     if(password){
       updatedData['password']=password;
+      updatedData['email']=email??"";
     }
 
     this.userService.updateUserSettings(updatedData).subscribe({

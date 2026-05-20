@@ -34,6 +34,7 @@ export class Sidebar {
   logout(){
     localStorage.removeItem("eshikshaToken");
     this.router.navigateByUrl("");
+    this.userService.activeUser$.next(null);
   }
 
   openNotificaionBox(){

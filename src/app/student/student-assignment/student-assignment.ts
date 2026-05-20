@@ -32,11 +32,13 @@ export class StudentAssignment {
   fileId!: string | undefined;
   AssignmentId: string | undefined;
 
+  
+
   constructor() { }
 
   ngOnInit() {
     this.courseId = this.activatedRoutes.snapshot.params['courseId'];
-
+ 
     this.assignmentService.selectedAssignment$.subscribe({
       next: (res) => {
         this.assignedAssignment.set(res);
@@ -52,14 +54,12 @@ export class StudentAssignment {
       }
     })
 
-
-
   }
 
 
 
   downloadInstructorPdf(): void {
-    this.assignmentService.downloadAssignment(this.courseId, this.fileId).subscribe({
+    this.assignmentService.downloadAssignmentStudent(this.courseId, this.fileId).subscribe({
       next: (blob: Blob) => {
 
         const downloadUrl = window.URL.createObjectURL(blob);
@@ -92,17 +92,26 @@ export class StudentAssignment {
     if (file && file.type === 'application/pdf') {
       this.selectedFile = file;
     } else {
-      alert("Please select a valid PDF file for your submission.");
+      this.toastService.error('Please select a valid pdf file for the submission');
     }
   }
 
   submitResult(): void {
+    const formData = new FormData();
     if (this.selectedFile) {
-      console.log('Submitting result PDF:', this.selectedFile.name);
-
-      alert('Assignment submitted successfully!');
-
-      this.selectedFile = null;
+      formData.append('myFile', this.selectedFile);
     }
+
+    this.assignmentService.uploadStudentAsignment(formData, this.courseId, this.AssignmentId).subscribe(
+      {
+        next:(res)=>{
+          this.toastService.success("Assignment Submitted Successfully")
+        },
+        error:(err)=>{
+          this.toastService.error("You have already uploaded the assignment");
+        }
+      }
+    )
+    this.selectedFile=null;
   }
 }

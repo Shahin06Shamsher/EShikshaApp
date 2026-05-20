@@ -6,6 +6,7 @@ import { AuthUser } from '../../models/authUser';
 import { ToastrService } from 'ngx-toastr';
 import { LoadingService } from '../../services/loading-service';
 import { finalize } from 'rxjs';
+import { TokenService } from '../../services/token-service';
 
 @Component({
   selector: 'app-login',
@@ -17,6 +18,7 @@ export class Login {
   // custom services
   private userService = inject(UserService);
   private loadingService = inject(LoadingService);
+  private tokenService = inject(TokenService);
   
   // external services
   private formBuilder = inject(FormBuilder);
@@ -38,12 +40,10 @@ export class Login {
       )
       .subscribe({
         next:(res)=>{
-          // console.log(res);
           if(res.result?.token){
             localStorage.setItem("eshikshaToken", res.result.token);
+            this.router.navigateByUrl("dashboard");
           }
-           localStorage.setItem("user", JSON.stringify(res));
-          this.router.navigateByUrl("dashboard");
         },
         error:(err)=>{
           this.toastService.error(err?.error?.message??"Some internal server error occure");

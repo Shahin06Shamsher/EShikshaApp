@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms'; 
 import { HttpClient } from '@angular/common/http'; 
 import { UserService } from '../../services/user-service';
+import { ForumService } from '../../services/forum-service';
 
 @Component({
   selector: 'app-community-forum',
@@ -14,6 +15,7 @@ import { UserService } from '../../services/user-service';
 export class CommunityForumComponent implements OnInit {
 
   private userService = inject(UserService);
+  private forumService=inject(ForumService);
   private http = inject(HttpClient);
 
   posts = signal<any[]>([]);
@@ -30,7 +32,7 @@ export class CommunityForumComponent implements OnInit {
   }
 
   loadForumPosts() {
-    this.http.get<any>('http://localhost:8000/api/forum').subscribe({
+    this.forumService.loadForumPosts().subscribe({
       next: (response) => {
         console.log("Forum response dump:", response);
         
@@ -63,7 +65,7 @@ export class CommunityForumComponent implements OnInit {
 
     console.log("Submitting custom payload to backend:", newEntry);
 
-    this.http.post<any>('http://localhost:8000/api/forum', newEntry).subscribe({
+    this.forumService.creatForumPosts(newEntry).subscribe({
       next: (response) => {
         console.log("Posted successfully!", response);
         this.newPostTitle = '';
@@ -77,7 +79,7 @@ export class CommunityForumComponent implements OnInit {
     });
   }
 
-  postReply(postId: any, replyText: string) {
+  postReply(postId: string, replyText: string) {
     if (!replyText.trim()) return;
 
     
@@ -88,7 +90,7 @@ export class CommunityForumComponent implements OnInit {
 
     console.log("Replying to post ID:", postId, "with body:", replyData);
 
-    this.http.post<any>(`http://localhost:8000/api/forum/${postId}/reply`, replyData).subscribe({
+    this.forumService.createForumReply(postId,replyData).subscribe({
       next: (response) => {
         console.log("Reply added successfully!", response);
         this.loadForumPosts(); 

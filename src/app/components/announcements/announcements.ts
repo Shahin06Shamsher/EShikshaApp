@@ -45,7 +45,7 @@ export class Announcements implements OnInit {
   isInstructor = false; 
 
   ngOnInit() {
-    
+    // Reactive Form controls initialization
     this.announcementForm = this.fb.group({
       courseId: ['', Validators.required],
       messageText: ['', [Validators.required, Validators.minLength(5)]]
@@ -57,7 +57,7 @@ export class Announcements implements OnInit {
         if (courses) this.instructorCourses.set(courses);
       });
 
-    
+    // Main authenticated login logic integration tracking
     this.userService.activeUser$.subscribe(user => {
       this.isInstructor = user?.role === "INSTRUCTOR";
       if(this.isInstructor){
@@ -87,10 +87,10 @@ export class Announcements implements OnInit {
     });
 
    
-  }
+  }//authentication 
 
   getCourseName(id: string) {
-    return this.instructorCourses().find(c => c.id == id)?.title || 'Selected Course';
+    return this.instructorCourses().find(c => c.id == id)?.title || 'Selected Course';//selecting course
   }
 
   postAnnouncement() {

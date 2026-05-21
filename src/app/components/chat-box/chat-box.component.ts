@@ -1,4 +1,4 @@
-import { Component, ChangeDetectorRef } from '@angular/core'; // 👈 ChangeDetectorRef import kiya
+import { Component, ChangeDetectorRef } from '@angular/core'; 
 import { CommonModule } from '@angular/common'; 
 import { FormsModule } from '@angular/forms';     
 import { HttpClientModule, HttpClient } from '@angular/common/http';
@@ -19,7 +19,7 @@ interface Message {
 export class ChatBoxComponent {
   userPrompt: string = '';
   messages: Message[] = [
-    { sender: 'Bot', text: 'Hello Shahin! Static Bot is ready. Ask me anything!', time: this.getCurrentTime() }
+    { sender: 'Bot', text: 'Hello Student! Static Bot is ready. Ask me anything!', time: this.getCurrentTime() }
   ];
   isLoading: boolean = false;
 

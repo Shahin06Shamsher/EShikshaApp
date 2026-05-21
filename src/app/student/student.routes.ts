@@ -15,6 +15,6 @@ export const studentRoutes : Routes = [
         {path:"community-forum",loadComponent:()=>import("../components/community-forum/community-forum").then(r=>r.CommunityForumComponent)},
         {path:"enrolledcourses/coursedetails/:courseId", loadComponent:()=>import("../components/course-details/course-details").then(r=>r.CourseDetails)},
         {path:"enrolledcourses/coursedetails/:courseId/assignment/:id",loadComponent:()=>import("../student/student-assignment/student-assignment").then(r=>r.StudentAssignment)},
-        {path:"Chat-box.Component",loadComponent:()=>import("../components/chat-box/chat-box.component").then(r=>r.ChatBoxComponent)},
+        {path:"chat-box",loadComponent:()=>import("../components/chat-box/chat-box.component").then(r=>r.ChatBoxComponent)},
     ]}
 ]

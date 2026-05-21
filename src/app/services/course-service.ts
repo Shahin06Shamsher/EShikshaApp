@@ -33,8 +33,8 @@ export class CourseService {
     return this.httpClient.get<{result:Course[],message:string}>(this.apiServices.getFullUrl('course'), {params});
   }
 
-  getCourseById(courseId:string):Observable<{result:{course:Course,assignments:Assignments[], quizzes:any[]}, message:string}>{
-    return this.httpClient.get<{result:{course:Course,assignments:Assignments[], quizzes:any[]}, message:string}>(this.apiServices.getFullUrl(`course/${courseId}`))
+  getCourseById(courseId:string):Observable<{result:{course:Course,assignments:Assignments[], quizzes:any[], totalEnrollments:number}, message:string}>{
+    return this.httpClient.get<{result:{course:Course,assignments:Assignments[], quizzes:any[], totalEnrollments:number}, message:string}>(this.apiServices.getFullUrl(`course/${courseId}`))
   }
 
   createCourse(course:Course):Observable<{result:Course, message:string}>{
@@ -51,11 +51,11 @@ export class CourseService {
 
 //ENROLLMENT============
 
-  enrollCourse(courseId:string):Observable<{result:null, message:string}>{
-    return this.httpClient.post<{result:null, message:string}>(this.apiServices.getFullUrl(`student/course/${courseId}/enroll`),{});
+  enrollCourse(courseId:string):Observable<{result:EnrolledCourse, message:string}>{
+    return this.httpClient.post<{result:EnrolledCourse, message:string}>(this.apiServices.getFullUrl(`student/course/${courseId}/enroll`),{});
   }
 
-  getEnrolledCourse(studentId?:string):Observable<{result:EnrolledCourse[],message:string}>{
+  getEnrolledCourse():Observable<{result:EnrolledCourse[],message:string}>{
     return this.httpClient.get<{result:EnrolledCourse[],message:string}>(this.apiServices.getFullUrl(`student/course`));
   }
 

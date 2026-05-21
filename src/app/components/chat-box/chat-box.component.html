@@ -1,9 +1,9 @@
-<div class="chat-container">
+<div class="d-flex flex-column" style="height: 80vh;">
   <div class="chat-header">
     <h3>🤖 EduFlow Learning Assistant</h3>
     <span class="status-badge">Online</span>
   </div>
-
+  
   <div class="chat-body">
     <div *ngFor="let msg of messages" [ngClass]="msg.sender === 'You' ? 'user-wrapper' : 'bot-wrapper'">
       <div class="message-bubble" [ngClass]="msg.sender === 'You' ? 'user-msg' : 'bot-msg'">
@@ -12,7 +12,7 @@
         <span class="msg-time">{{ msg.time }}</span>
       </div>
     </div>
-
+  
     <div *ngIf="isLoading" class="bot-wrapper">
       <div class="message-bubble bot-msg">
         <strong class="sender-title">Bot</strong>
@@ -21,7 +21,7 @@
       </div>
     </div>
   </div>
-
+  
   <div class="chat-footer">
     <input 
       type="text" 

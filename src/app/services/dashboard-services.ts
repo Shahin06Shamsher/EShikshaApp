@@ -18,4 +18,8 @@ export class DashboardServices {
   getInstructorDashboard():Observable<{result:any, message:string}>{
     return this.httpClient.get<{result:any, message:string}>(this.apiService.getFullUrl("instructor/dashboard"));
   }
+
+  getStudentDashboard():Observable<{result:any, message:string}>{
+    return this.httpClient.get<{result:any, message:string}>(this.apiService.getFullUrl("student/dashboard"));
+  }
 }

@@ -37,6 +37,7 @@ export class CourseDetails {
   }
   reviewText = signal<string>('');
 
+  marksArray=signal<{[key:string]:number}|null>(null);
 
   ngOnInit() {
     this.courseId1 = this.activatedRoute.snapshot.params['courseId'];
@@ -48,6 +49,18 @@ export class CourseDetails {
       this.selectedCourse.set(res.result);
       console.log(res.result);
     })
+
+    this.assignmentService.getMarks(this.courseId1).subscribe(
+      {
+        next:(res)=>{
+          this.marksArray.set(res.result);
+          console.log(this.marksArray()); 
+        },
+        error:(err)=>{
+            this.toastService.error("something went wrong");
+        }
+      }
+    )
   }
 
   enroll() {
@@ -89,11 +102,10 @@ export class CourseDetails {
 
   goToSubmitAssignment(assignment:Assignments) {
     this.assignmentService.selectedAssignment$.next(assignment);
-
+    console.log(assignment);
     this.router.navigate(
       ['/dashboard/enrolledcourses/coursedetails', this.courseId1, 'assignment', assignment._id]
     );
-
 
   }
 

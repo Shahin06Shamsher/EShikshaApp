@@ -15,10 +15,11 @@ import { CourseService } from '../../services/course-service';
 })
 export class StudentAssignment {
 
-  activatedRoutes = inject(ActivatedRoute);
-  toastService = inject(ToastrService);
-  assignmentService = inject(AssignmentService);
-  courseService = inject(CourseService);
+
+  private activatedRoutes = inject(ActivatedRoute);
+  private toastService = inject(ToastrService);
+  private assignmentService = inject(AssignmentService);
+  private courseService = inject(CourseService);
 
 
   courseId!: string;
@@ -32,7 +33,7 @@ export class StudentAssignment {
   fileId!: string | undefined;
   AssignmentId: string | undefined;
 
-  
+
 
   constructor() { }
 

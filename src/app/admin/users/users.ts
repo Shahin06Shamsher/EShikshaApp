@@ -3,8 +3,9 @@ import { User } from '../../models/user';
 import { UserService } from '../../services/user-service';
 import { CommonModule } from '@angular/common';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs';
+import { combineLatest, debounceTime, distinctUntilChanged, map, skip, skipLast, startWith, switchMap } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
+import { toObservable } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-users',
@@ -17,25 +18,35 @@ export class Users {
   private userService = inject(UserService);
   private toastService = inject(ToastrService);
 
-  users = signal<User[]>([]);
+  users = signal<{users:User[], totalUsers:number}>({users:[], totalUsers:0});
   selectedRole!:string;
   searchText = new FormControl('');
   setEditUser = signal<string>('');
-  userValueForEdit = {
-    email: "",
-    name: ""
-  }
+  updatedRole = new FormControl('');
+  currentPage = signal<number>(1);
+
+  getUser$ = combineLatest([
+      toObservable(this.currentPage),
+      this.searchText.valueChanges.pipe(
+        debounceTime(500),
+        distinctUntilChanged(),
+        startWith(this.searchText.value || '')
+      )
+    ]).pipe(
+      switchMap(([page, value])=>{
+        console.log(value, page);
+        return this.userService.getUsers(this.selectedRole||'ALL', value??'', page)
+      })
+    )
 
   ngOnInit(){
-    this.getTableData('ALL');
-    this.searchText.valueChanges.pipe(
-      debounceTime(400),
-      distinctUntilChanged(),
-      switchMap(value=>{
-        return this.userService.getUsers(this.selectedRole||"ALL", value||'')
-      })
-    ).subscribe(res=>{
-      this.users.set(res.result);
+    this.getUser$.subscribe({
+      next:res=>{
+        this.users.set(res.result);
+      },
+      error:err=>{
+        this.toastService.error(err.error?.message??"Internal server Error");
+      }
     })
   }
 
@@ -55,8 +66,8 @@ export class Users {
   }
 
   editUser(user:User, ind:number){
-    if(this.setEditUser() && user._id){
-      this.userService.updateUser(user._id, this.userValueForEdit).subscribe({
+    if(user._id && this.setEditUser()===user._id){
+      this.userService.updateUser(user._id, this.updatedRole.value??'').subscribe({
         next:res=>{
           this.updateUserTableData(user, 'update', ind);
           this.toastService.success(res.message);
@@ -68,8 +79,7 @@ export class Users {
         }
       })
     }else{
-      this.userValueForEdit.email=user.email;
-      this.userValueForEdit.name=user.name;
+      this.updatedRole.setValue(user?.role??'');
       this.setEditUser.set(user._id??"");
     }
   }
@@ -91,13 +101,30 @@ export class Users {
 
   updateUserTableData = (user:User, action:'update'|'delete', ind?:number)=>{
     if(action==='delete'){
-      this.users.set(this.users().filter(u=>u._id!==user._id));
+      this.users.set({users:this.users().users.filter(u=>u._id!==user._id), totalUsers:this.users().totalUsers-1});
     }else if(action==='update' && ind){
-      const updatedUser = {...user,...this.userValueForEdit};
-      this.users.update(users=>users.map(u=>{
-        if(u._id===user._id)return updatedUser;
-        return u;
-      }));
+      const updatedUser = {...user, role:this.updatedRole.value??user.role};
+      this.users.update(usersData=>{
+        return {
+          ...usersData,
+          users: usersData.users.map(u=>{
+            if(u._id===user._id)return updatedUser;
+            return u;
+          })
+        }
+      });
+    }
+  }
+
+  goToPreviousPage(){
+    if(this.currentPage()>1){
+      this.currentPage.update(pageNumber=>--pageNumber);
+    }
+  }
+
+  goToNextPage(){
+    if(this.currentPage()<(this.users().totalUsers/5)){
+      this.currentPage.update(pageNumber=>++pageNumber);
     }
   }
 }

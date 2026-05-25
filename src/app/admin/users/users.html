@@ -9,7 +9,7 @@
     <div class="card border-0 shadow-sm">
         <div class="card-header bg-white border-0 pt-4 px-4">
             <div class="row g-3">
-                <div class="col-12 col-md-6 col-lg-4">
+                <div class="col-12 col-md-6 col-lg-6">
                     <div class="input-group input-group-merge">
                         <span class="input-group-text bg-light border-0">
                             <i class="bi bi-search text-muted"></i>
@@ -17,7 +17,7 @@
                         <input type="text" class="form-control bg-light border-0 ps-0" placeholder="Search by name or email..." [formControl]="searchText">
                     </div>
                 </div>
-                <div class="col-12 col-md-auto ms-md-auto">
+                <div class="col-12 col-md-6 col-lg-4">
                     <div class="d-flex gap-2">
                         <select class="form-select border-light-subtle shadow-none" [(ngModel)]="selectedRole" (change)="filterUser()">
                             <option value="ALL" selected>All Roles</option>
@@ -27,6 +27,13 @@
                         <button class="btn btn-light border-light-subtle">
                             <i class="bi bi-funnel"></i>
                         </button>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6 col-lg-2 d-flex justify-content-end">
+                    <div>
+                        <button (click)="goToPreviousPage()"><i class="bi bi-arrow-left-short"></i></button>
+                        {{currentPage()}}
+                        <button (click)="goToNextPage()"><i class="bi bi-arrow-right-short"></i></button>
                     </div>
                 </div>
             </div>
@@ -44,27 +51,28 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @for(user of users(); track $index){
+                        @for(user of users().users; track $index){
                             <tr>
                                 <td class="ps-4">
                                     <div class="d-flex align-items-center">
-                                        <img [src]="getAvtarUrl(user.name, user.role)" class="rounded-circle me-3" width="38" height="38">
+                                        <img [src]="getAvtarUrl(user.name, user?.role??'')" class="rounded-circle me-3" width="38" height="38">
                                         <span class="fw-semibold text-dark">
-                                            @if(setEditUser()===user._id){
-                                                <input type="text" [(ngModel)]="userValueForEdit.name">
-                                            }@else{
-                                                {{user.name}}
-                                            }
+                                            {{user.name}}
                                         </span>
                                     </div>
                                 </td>
-                                <td><span class="badge bg-primary-soft px-3" [ngClass]="user.role==='STUDENT'?'text-info':'text-primary'">{{user.role}}</span></td>
-                                <td class="text-muted">
-                                    @if(setEditUser()===user._id){
-                                        <input type="text" [(ngModel)]="userValueForEdit.email">
+                                <td>
+                                    @if(setEditUser()===user._id && user?.role){
+                                        <select name="role" id="role" [formControl]="updatedRole">
+                                            <option value="STUDENT" [selected]="user.role==='STUDENT'">Student</option>
+                                            <option value="INSTRUCTOR" [selected]="user.role==='INSTRUCTOR'">Instructor</option>
+                                        </select>
                                     }@else{
-                                        {{user.email}}
+                                        <span class="badge bg-primary-soft px-3" [ngClass]="user.role==='STUDENT'?'text-info':'text-primary'">{{user.role}}</span>
                                     }
+                                </td>
+                                <td class="text-muted">
+                                    {{user.email}}
                                 </td>
                                 <td class="text-end pe-4">
                                     <div class="btn-group">

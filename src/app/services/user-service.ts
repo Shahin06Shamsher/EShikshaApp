@@ -18,23 +18,24 @@ export class UserService {
   }
 
   logout():Observable<{result:{token:string},message:string}>{
-      return this.httpClient.post<{result:{token:string},message:string}>(this.apiServices.getFullUrl("user/logout"), {});
+    return this.httpClient.post<{result:{token:string},message:string}>(this.apiServices.getFullUrl("user/logout"), {});
   }
 
   register(user:User):Observable<{result:any, message:string|string[]}>{
     return this.httpClient.post<{result:any, message:string|string[]}>(this.apiServices.getFullUrl("auth/register"), user);
   }
 
-  getUsers(role?:string,searchVal?:string):Observable<{result:User[], success:boolean, message:string, errors:any[]}>{
+  getUsers(role?:string,searchVal?:string, pageNumber?:number):Observable<{result:{users:User[], totalUsers:number}, success:boolean, message:string, errors:any[]}>{
     let params = new HttpParams();
-    // Only append if the value actually exists
+
     if (role && role !== 'ALL') params = params.append('role', role);
     if (searchVal && searchVal.trim() !== '') params = params.append('searchVal', searchVal);
-    return this.httpClient.get<{result:User[], success:boolean, message:string, errors:any[]}>(this.apiServices.getFullUrl(`admin/users`),{params})
+    if(pageNumber) params = params.append('pageNumber', pageNumber)
+    return this.httpClient.get<{result:{users:User[], totalUsers:number}, success:boolean, message:string, errors:any[]}>(this.apiServices.getFullUrl(`admin/users`),{params})
   }
 
-  updateUser(userId:string, updatedData:{email?:string,name?:string}):Observable<{result:null, message:string}>{
-    return this.httpClient.patch<{result:null, message:string}>(this.apiServices.getFullUrl(`admin/user/${userId}`), updatedData);
+  updateUser(userId:string, role?:string):Observable<{result:null, message:string}>{
+    return this.httpClient.patch<{result:null, message:string}>(this.apiServices.getFullUrl(`admin/user/${userId}`), {role});
   }
 
   deleteUser(userId:string):Observable<{result:null, message:string}>{

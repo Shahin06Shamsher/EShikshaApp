@@ -52,17 +52,6 @@
                     </div>
                     }
                 </div>
-
-                <div class="form-floating mb-1">
-                    <select class="form-select border-0 bg-light px-3" id="role"
-                        [ngClass]="role?.touched && role?.hasError('required')?'is-invalid':''" formControlName="role"
-                        style="border-radius: 12px;">
-                        <option value="STUDENT">Student</option>
-                        <option value="INSTRUCTOR">Instructor</option>
-                    </select>
-                    <label for="role" class="text-muted ps-3">Select User Role</label>
-                </div>
-
                 <div class="row g-2">
                     <div class="col-md-6">
                         <div class="form-floating">

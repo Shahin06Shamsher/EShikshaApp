@@ -32,7 +32,6 @@ export class Register {
   registerForm = this.formBuilder.group({
     name: ["", [Validators.required, Validators.pattern("[a-zA-Z ]+")]],
     email: ["", [Validators.required, Validators.pattern("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$")]],
-    role: ["", [Validators.required]],
     password: ["", [Validators.required, this.regFormValidator.passwordValidator]],
     confirmPassword: ["", [Validators.required]]
   },
@@ -43,9 +42,9 @@ export class Register {
 
   register(){
     this.loadingService.isLoading$.next(true);
-    const { name, email, role, password } = this.registerForm.value;
-    if(name && email && role && password){
-      this.userService.register(new User(name,email,role,password))
+    const { name, email, password } = this.registerForm.value;
+    if(name && email && password){
+      this.userService.register(new User(name,email,password))
       .subscribe({
         next:res=>{
           this.toasterService.success(res.message as string);

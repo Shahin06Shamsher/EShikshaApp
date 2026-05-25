@@ -33,7 +33,7 @@ export class Sidebar {
   }
 
   getLink(navLink:string):string{
-    if(navLink==="Dashboard") return "./"+this.activeUser.role.toLocaleLowerCase();
+    if(navLink==="Dashboard" && this.activeUser?.role) return "./"+this.activeUser.role.toLocaleLowerCase();
     return navLink.replaceAll(" ","").toLowerCase();
   }
 

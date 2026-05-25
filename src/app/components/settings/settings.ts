@@ -22,10 +22,6 @@ export class Settings {
   settingsForm = this.formBuilder.group({
     name: ['', []],
     email : ['', []],
-    password: ['', [this.regFromValidator.passwordValidator]],
-    confirmPassword: ['', []]
-  },{
-    validators: this.regFromValidator.passwordMatchValidator
   })
   
   ngOnInit(){
@@ -37,19 +33,12 @@ export class Settings {
   }
 
   updateProfile(){
-    if(!this.settingsForm.valid) return;
+    if(!this.settingsForm.valid || !this.settingsForm.dirty) return;
+    console.log(this.settingsForm.pristine)
+    console.log(this.settingsForm.dirty)
+    const {name, email }=this.settingsForm.value;
 
-    if(this.settingsForm.get('email')?.value!==this.activeUser.email && this.settingsForm.get('password')?.value){
-      this.toastService.error("Email and Password can't be updated at the same time");
-      return;
-    }
-    if(this.settingsForm.get('password')?.value!==this.settingsForm.get('confirmPassword')?.value){
-      this.toastService.error("Password and Confirm password must be same");
-      return;
-    }
-    const {name, email, password}=this.settingsForm.value;
-
-    let updatedData:{name?:string,email?:string,password?:string,confirmPassword?:string} = {};
+    let updatedData:{name?:string,email?:string} = {};
 
     if(name && this.activeUser.name!==name){
       updatedData['name']=name;
@@ -57,11 +46,6 @@ export class Settings {
     if(email && this.activeUser.email!==email){
       updatedData['email']=email;
     }
-    if(password){
-      updatedData['password']=password;
-      updatedData['email']=email??"";
-    }
-
     this.userService.updateUserSettings(updatedData).subscribe({
       next:res=>{
         this.toastService.success(res.message);

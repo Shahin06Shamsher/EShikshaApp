@@ -112,7 +112,7 @@ export class ManageCourse {
   }
  
   editCourse(course: any) {
-  this.isEditMode.set(true);
+    this.isEditMode.set(true);
     this.oldCourseName = course.title;
     this.courseForm.patchValue({
       title: course.title,
@@ -144,11 +144,6 @@ export class ManageCourse {
     this.oldCourseName = "";
   }
 
-  //some extra
-  updateExistingCourse(v:any,n:any){}
 
-  addCourse(v:any){}
-
-  removeCourse(c:any){}
 
 }

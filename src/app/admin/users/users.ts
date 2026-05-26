@@ -2,7 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { User } from '../../models/user';
 import { UserService } from '../../services/user-service';
 import { CommonModule } from '@angular/common';
-import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormControl, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { combineLatest, debounceTime, distinctUntilChanged, map, skip, skipLast, startWith, switchMap } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
 import { toObservable } from '@angular/core/rxjs-interop';
@@ -17,6 +17,7 @@ export class Users {
 
   private userService = inject(UserService);
   private toastService = inject(ToastrService);
+  private formBuilder = inject(FormBuilder);
 
   users = signal<{users:User[], totalUsers:number}>({users:[], totalUsers:0});
   selectedRole!:string;
@@ -24,6 +25,11 @@ export class Users {
   setEditUser = signal<string>('');
   updatedRole = new FormControl('');
   currentPage = signal<number>(1);
+  openInputRow = signal<boolean>(false);
+  instructorData = this.formBuilder.group({
+    name: ['', [Validators.required]],
+    email: ['', [Validators.required, Validators.pattern("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$")]]
+  })
 
   getUser$ = combineLatest([
       toObservable(this.currentPage),
@@ -34,7 +40,6 @@ export class Users {
       )
     ]).pipe(
       switchMap(([page, value])=>{
-        console.log(value, page);
         return this.userService.getUsers(this.selectedRole||'ALL', value??'', page)
       })
     )
@@ -67,11 +72,14 @@ export class Users {
 
   editUser(user:User, ind:number){
     if(user._id && this.setEditUser()===user._id){
+      if(!this.updatedRole.touched){
+        this.setEditUser.set('');
+        return;
+      }
       this.userService.updateUser(user._id, this.updatedRole.value??'').subscribe({
         next:res=>{
           this.updateUserTableData(user, 'update', ind);
           this.toastService.success(res.message);
-          this.setEditUser.set('');
         },
         error:err=>{
           console.log(err);
@@ -126,5 +134,32 @@ export class Users {
     if(this.currentPage()<(this.users().totalUsers/5)){
       this.currentPage.update(pageNumber=>++pageNumber);
     }
+  }
+
+  toggoleInputRow(){
+    this.openInputRow.update(pre=>!pre);
+  }
+
+  createInstructor(){
+    const {name, email} = this.instructorData.value;
+    if(name && email){
+      this.userService.addInstructor({name, email}).subscribe({
+        next:res=>{
+          this.users.update(uarr=>{
+            uarr.users = [res.result, ...uarr.users];
+            return uarr;
+          })
+          this.openInputRow.set(false);
+          this.toastService.success(res.message);
+        },
+        error:err=>{
+          this.toastService.error(err?.error?.message || "Internal server error");
+        }
+      })
+    }
+  }
+
+  get email(){
+    return this.instructorData.get('email');
   }
 }

@@ -52,4 +52,8 @@ export class UserService {
   getUserSettings():Observable<{result:User, message:string}>{
     return this.httpClient.get<{result:User, message:string}>(this.apiServices.getFullUrl("user/settings"));
   }
+
+  addInstructor(userData:{name:string, email:string}):Observable<{result:User, message:string}>{
+    return this.httpClient.post<{result:User, message:string}>(this.apiServices.getFullUrl('admin/user'), userData);
+  }
 }

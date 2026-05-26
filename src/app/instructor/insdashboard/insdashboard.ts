@@ -77,7 +77,7 @@ export class Insdashboard {
       data.push(students[i]?.totalStudents??0);
       if(students[i]?.course){
         const ind = courses.findIndex((c:any)=>c._id===students[i]?.course);
-        labels.push(courses[ind]?.title)
+        labels.push(`${courses[ind]?.title}\n${courses[ind]?.category}`)
       }else{
         labels.push("No")
       }

@@ -86,6 +86,10 @@ export class Quizes {
     this.quizForm.value.questions = this.modifyQuestions(this.quizForm.value.questions);
     const {courseId, ...quizData} = this.quizForm.value;
     if (this.isEditing && this.editingQuizId !== null) {
+      if(!this.quizForm.touched){
+        this.toastService.warning("No value changed for update");
+        return;
+      }
       this.quizService.updateQuiz(courseId, this.editingQuizId, quizData).subscribe({
         next:res=>{
           this.quizList.update(qarr=>qarr.map(q=>{
@@ -146,6 +150,8 @@ export class Quizes {
       markPerQuestion: (quiz.totalMarks/quiz?.questions?.length),
       timeLimit: quiz.timeLimit
     });
+
+    this.quizForm.markAsUntouched();
     
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
@@ -187,7 +193,7 @@ export class Quizes {
   }
 
   getQuizesByCourseId(event:any){
-    console.log(event.target.value);
+    // console.log(event.target.value);
     this.quizService.getQuizes(event.target.value).subscribe({
       next:res=>{
         this.quizList.set(res.result);

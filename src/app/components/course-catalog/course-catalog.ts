@@ -5,7 +5,7 @@ import { CourseService } from '../../services/course-service';
 import { Course } from '../../models/course';
 import { LoadingService } from '../../services/loading-service';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { debounceTime } from 'rxjs';
+import { debounceTime, finalize } from 'rxjs';
 
 @Component({
   selector: 'app-course-catalog',
@@ -22,14 +22,7 @@ export class CourseCatalog {
   searchQuery = new FormControl('');
 
   ngOnInit(){
-    this.loadingService.isLoading$.next(true);
-    this.courseService.catalogCourses$.subscribe(res=>{
-      if(res.length!==0)this.courseList.set(res);
-      else {
-        this.getCourses()
-      }
-      this.loadingService.isLoading$.next(false);
-    })
+    this.getCourses();
 
     this.searchQuery.valueChanges
     .pipe(
@@ -43,7 +36,12 @@ export class CourseCatalog {
 
 
   getCourses = (val?:string)=>{
-    this.courseService.getAllCourses(1,val).subscribe(res=>{
+    this.loadingService.isLoading$.next(true)
+    this.courseService.getAllCourses(1,val)
+    .pipe(
+      finalize(()=>this.loadingService.isLoading$.next(false))
+    )
+    .subscribe(res=>{
       this.courseList.set(res.result.courses);
     })
   }

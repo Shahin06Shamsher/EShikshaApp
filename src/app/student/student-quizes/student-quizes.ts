@@ -6,6 +6,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Quiz } from '../../models/quiz';
 import { QuizResponse } from '../../models/quizResponse';
 import { ToastrService } from 'ngx-toastr';
+import { CourseService } from '../../services/course-service';
 
 
 @Component({
@@ -19,6 +20,7 @@ export class StudentQuizes {
   private activatedRouter = inject(ActivatedRoute);
   private toastService = inject(ToastrService);
   private router = inject(Router);
+  private courseService = inject(CourseService);
 
   quizData = signal<Quiz|null>(null);
   isQuizStarted = signal<boolean>(false);
@@ -90,8 +92,16 @@ export class StudentQuizes {
     this.quizService.submitQuizResponse(this.courseId, this.quizId, quizData).subscribe({
       next:res=>{
         this.result.set(res.result);
+        const courses = this.courseService.studentCourses$.getValue();
+        if(courses){
+          this.courseService.studentCourses$.next(courses.map(c=>{
+            if(c.course._id===this.courseId)return {...c, attendedQuizes:[...new Set([...c.attendedQuizes,this.quizId])]};
+            return c;
+          }))
+          debugger;
+          console.log(this.courseService.studentCourses$.getValue());
+        }
         this.toastService.success(res.message);
-        console.log(res.result);
       },
       error:err=>{
         this.toastService.error(err.error.message||"Internal server error");

@@ -1,83 +1,93 @@
-import { Component, ChangeDetectorRef } from '@angular/core'; 
+import { Component, inject, signal } from '@angular/core'; 
 import { CommonModule } from '@angular/common'; 
 import { FormsModule } from '@angular/forms';     
-import { HttpClientModule, HttpClient } from '@angular/common/http';
-
-interface Message {
-  sender: 'You' | 'Bot';
-  text: string;
-  time: string;
-}
+import { ChatData } from '../../models/chatModel';
+import { UserService } from '../../services/user-service';
+import { ChatService } from '../../services/chat-service';
+import { ToastrService } from 'ngx-toastr';
+import { finalize } from 'rxjs';
+import { LoadingService } from '../../services/loading-service';
 
 @Component({
   selector: 'app-chat-box',
   standalone: true, 
-  imports: [CommonModule, FormsModule, HttpClientModule], 
+  imports: [CommonModule, FormsModule], 
   templateUrl: './chat-box.component.html',
   styleUrls: ['./chat-box.component.css']
 })
 export class ChatBoxComponent {
+  private userService = inject(UserService);
+  private chatService = inject(ChatService);
+  private toastService = inject(ToastrService);
+  private loadingService = inject(LoadingService);
+
+  messages = signal<ChatData[]>([]);
+  isLoading = signal<boolean>(false);
   userPrompt: string = '';
-  messages: Message[] = [
-    { sender: 'Bot', text: 'Hello Student! Static Bot is ready. Ask me anything!', time: this.getCurrentTime() }
-  ];
-  isLoading: boolean = false;
+  botStatus = signal<string>('');
 
-  private backendUrl = 'http://localhost:8000/api/chatBox/stream';
-
-  
-  constructor(private http: HttpClient, private cdr: ChangeDetectorRef) {}
-
-  sendMessage() {
-    if (!this.userPrompt.trim() || this.isLoading) return;
-
-    const currentPrompt = this.userPrompt;
-    const messageTime = this.getCurrentTime(); 
-    
-    
-    this.messages.push({
-      sender: 'You',
-      text: currentPrompt,
-      time: messageTime
-    });
-
-    this.userPrompt = ''; 
-    this.isLoading = true;
-    this.cdr.detectChanges(); 
-
-    
-    this.http.post<any>(this.backendUrl, { prompt: currentPrompt }).subscribe({
-      next: (res) => {
-        if (res && res.reply) {
-          this.messages.push({
-            sender: 'Bot',
-            text: res.reply,
-            time: messageTime
-          });
-        } else {
-          this.messages.push({
-            sender: 'Bot',
-            text: 'Response received but reply format is empty.',
-            time: messageTime
-          });
-        }
-        this.isLoading = false;
-        this.cdr.detectChanges(); 
-      },
-      error: (err) => {
-        console.error("Frontend HTTP Error Block:", err);
-        this.messages.push({
-          sender: 'Bot',
-          text: `Error ${err.status}: Backend drop request block.`,
-          time: messageTime
-        });
-        this.isLoading = false;
-        this.cdr.detectChanges(); 
+  ngOnInit(){
+    this.loadingService.isLoading$.next(true);
+    this.chatService.checBotStatus().subscribe(s=>{
+      this.botStatus.set(s.result);
+      if(s.message){
+        this.toastService.warning(s.message);
+      }
+      this.loadingService.isLoading$.next(false);
+      if(s.result==='online'){
+        this.isLoading.set(true);
+        this.userService.activeUser$.subscribe(user=>{
+          this.messages.update(marr=>[...marr, new ChatData('user', [{text:`this is userDetails by system name=${user?.name}, role=${user?.role}`}])]);
+          this.chatService.getChatResponse(this.messages())
+          .pipe(
+            finalize(()=>this.isLoading.set(false))
+          )
+          .subscribe({
+            next:resultData=>{
+              this.messages().push(new ChatData('model', [{text:resultData.result}]))
+            },
+            error: err=>{
+              this.messages.update(marr=>{
+                marr.pop();
+                return marr;
+              })
+              this.toastService.error("Error while connecting with bot");
+            }
+          })
+        })
       }
     });
   }
 
-  private getCurrentTime(): string {
-    return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  sendMessage(){
+    if(this.botStatus()!=='online'){
+      this.toastService.error("Bot is now ofline please try again later.");
+      return;
+    }
+    this.isLoading.set(true);
+    this.messages.update(marr=>[...marr, new ChatData('user', [{text:this.userPrompt}])]);
+    this.chatService.getChatResponse(this.messages())
+    .pipe(
+      finalize(()=>this.isLoading.set(false))
+    )
+    .subscribe({
+      next:resultData=>{
+          this.messages().push(new ChatData('model', [{text:resultData.result}]));
+          this.userPrompt="";
+        },
+        error: err=>{
+          this.messages.update(marr=>{
+            marr.pop();
+            return marr;
+          })
+          this.toastService.error(err?.error?.message??"Error while connecting with bot");
+        }
+    })
   }
+
+
+  ngOnDestroy(){
+    this.botStatus.set('');
+  }
+
 }

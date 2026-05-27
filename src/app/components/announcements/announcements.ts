@@ -1,16 +1,12 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
-import { FormsModule } from '@angular/forms';
 import { UserService } from '../../services/user-service';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CourseService } from '../../services/course-service';
-import { map } from 'rxjs';
-import { AssignmentService } from '../../services/assignment-service';
 import { ToastrService } from 'ngx-toastr';
-import { Assignments } from '../../models/assignments';
 import { AnnouncementService } from '../../services/announcement-service';
-import { isArray } from 'chart.js/helpers';
+import { LoadingService } from '../../services/loading-service';
+import { finalize } from 'rxjs';
 
 
 @Component({
@@ -26,18 +22,19 @@ export class Announcements implements OnInit {
   private courseService = inject(CourseService);
   private toastService = inject(ToastrService);
   private annnouncementService = inject(AnnouncementService);
+  private loadingService = inject(LoadingService);
 
   notifications = signal<{
-  message:string,
-  course:{
-    title:string,
-    category:string
-  },
-  createdAt:Date,
-  instructor?:{
-    name?:string
-  }
-}[]|null>(null);
+                          message:string,
+                          course:{
+                            title:string,
+                            category:string
+                          },
+                          createdAt:Date,
+                          instructor?:{
+                            name?:string
+                          }
+                        }[]|null>(null);
 
   instructorCourses = signal<{ id: string, title: string, category: string }[]>([]);
   
@@ -45,7 +42,6 @@ export class Announcements implements OnInit {
   isInstructor = false; 
 
   ngOnInit() {
-    // Reactive Form controls initialization
     this.announcementForm = this.fb.group({
       courseId: ['', Validators.required],
       messageText: ['', [Validators.required, Validators.minLength(5)]]
@@ -57,16 +53,20 @@ export class Announcements implements OnInit {
         if (courses) this.instructorCourses.set(courses);
       });
 
-    // Main authenticated login logic integration tracking
+
     this.userService.activeUser$.subscribe(user => {
       this.isInstructor = user?.role === "INSTRUCTOR";
       if(this.isInstructor){
          this.announcementForm.get('courseId')?.valueChanges.subscribe(value=>{
           if(!value)return;
-          this.annnouncementService.loadInstructorAnnouncements(value).subscribe({
+          this.loadingService.isLoading$.next(true)
+          this.annnouncementService.loadInstructorAnnouncements(value)
+          .pipe(
+            finalize(()=>this.loadingService.isLoading$.next(false))
+          )
+          .subscribe({
             next:res=>{
               this.notifications.set(res.result);
-              console.log(res.result);
             },
             error:err=>{
               console.log(err);
@@ -75,7 +75,12 @@ export class Announcements implements OnInit {
           
         })
       }else{
-        this.annnouncementService.loadStudentAnnouncements().subscribe({
+        this.loadingService.isLoading$.next(true)
+        this.annnouncementService.loadStudentAnnouncements()
+        .pipe(
+          finalize(()=>this.loadingService.isLoading$.next(false))
+        )
+        .subscribe({
           next:res=>{
             this.notifications.set(res.result);
           },

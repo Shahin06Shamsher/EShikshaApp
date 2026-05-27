@@ -4,6 +4,8 @@ import { BaseChartDirective } from 'ng2-charts';
 import { LoadingService } from '../../services/loading-service';
 import { DashboardServices } from '../../services/dashboard-services';
 import { CommonModule, DatePipe } from '@angular/common';
+import { finalize } from 'rxjs';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-admindashboard',
@@ -14,6 +16,7 @@ import { CommonModule, DatePipe } from '@angular/common';
 export class Admindashboard {
   private loadingService = inject(LoadingService);
   private dashboardService = inject(DashboardServices);
+  private toastService = inject(ToastrService);
 
   dashboardData = signal<any>('');
   currentDate = new Date();
@@ -54,8 +57,12 @@ export class Admindashboard {
 
 
   ngOnInit(){
-    this.loadingService.isLoading$.next(false);
-    this.dashboardService.getAdminDashboard().subscribe({
+    this.loadingService.isLoading$.next(true);
+    this.dashboardService.getAdminDashboard()
+    .pipe(
+      finalize(()=>this.loadingService.isLoading$.next(false))
+    )
+    .subscribe({
       next:res=>{
         this.dashboardData.set(res.result);
         this.getLineChartData(res.result.userDetails.monthlyEnrollments);
@@ -66,7 +73,7 @@ export class Admindashboard {
         this.showChart.set(true);
       },
       error:err=>{
-        console.log(err);
+        this.toastService.error(err?.error?.message??"Error while loadin dashboard");
       }
     })
   }

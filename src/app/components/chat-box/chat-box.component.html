@@ -1,19 +1,22 @@
 <div class="d-flex flex-column" style="height: 80vh;">
   <div class="chat-header">
-    <h3>🤖 EduFlow Learning Assistant</h3>
-    <span class="status-badge">Online</span>
+    <h3><i class="bi bi-robot"></i> E-Shiksha Learning Assistant</h3>
+    <span class="badge" [ngClass]="botStatus()==='online'?'bg-success':'bg-danger'">{{botStatus() | uppercase}}</span>
   </div>
   
   <div class="chat-body">
-    <div *ngFor="let msg of messages" [ngClass]="msg.sender === 'You' ? 'user-wrapper' : 'bot-wrapper'">
-      <div class="message-bubble" [ngClass]="msg.sender === 'You' ? 'user-msg' : 'bot-msg'">
-        <strong class="sender-title">{{ msg.sender }}</strong>
-        <p class="msg-text">{{ msg.text }}</p>
-        <span class="msg-time">{{ msg.time }}</span>
-      </div>
-    </div>
+    @for(msg of messages(); track $index){
+      @if($index>0){
+        <div [ngClass]="msg.role === 'user' ? 'user-wrapper' : 'bot-wrapper'">
+          <div class="message-bubble" [ngClass]="msg.role === 'user' ? 'user-msg' : 'bot-msg'">
+            <strong class="sender-title">{{ msg.role }}</strong>
+            <p class="msg-text">{{ msg.parts[0].text }}</p>
+          </div>
+        </div>
+      }
+    }
   
-    <div *ngIf="isLoading" class="bot-wrapper">
+    <div *ngIf="isLoading()" class="bot-wrapper">
       <div class="message-bubble bot-msg">
         <strong class="sender-title">Bot</strong>
         <p class="msg-text thinking-animation">Thinking...</p>
@@ -28,10 +31,10 @@
       [(ngModel)]="userPrompt" 
       (keyup.enter)="sendMessage()" 
       placeholder="Type your doubt here..."
-      [disabled]="isLoading"
+      [disabled]="isLoading()"
     />
-    <button (click)="sendMessage()" [disabled]="isLoading || !userPrompt.trim()">
-      {{ isLoading ? '...' : 'Send' }}
+    <button (click)="sendMessage()" [disabled]="isLoading() || !userPrompt.trim()">
+      {{ isLoading() ? '...' : 'Send' }}
     </button>
   </div>
 </div>

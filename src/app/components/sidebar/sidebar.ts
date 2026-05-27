@@ -7,6 +7,7 @@ import { ToastrService } from 'ngx-toastr';
 import { LoadingService } from '../../services/loading-service';
 import { finalize } from 'rxjs';
 import { TokenService } from '../../services/token-service';
+import { CourseService } from '../../services/course-service';
 
 @Component({
   selector: 'app-sidebar',
@@ -21,6 +22,7 @@ export class Sidebar {
   toastService=inject(ToastrService);
   loadingService=inject(LoadingService);
   tokenService = inject(TokenService);
+  private courseService = inject(CourseService);
 
   navElements = input<string[]>();
   activeUser!:User;
@@ -43,6 +45,7 @@ export class Sidebar {
     ).subscribe({
          next:(res)=>{
           this.tokenService.eshikshaToken = "";
+          this.courseService.studentCourses$.next(null);
           this.router.navigateByUrl("");
           this.toastService.warning(res.message);
          },

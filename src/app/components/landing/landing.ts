@@ -1,12 +1,13 @@
 import { Component, inject, signal } from '@angular/core';
-import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { CourseCard } from '../course-card/course-card';
 import { CommonModule } from '@angular/common';
 import { CourseService } from '../../services/course-service';
 import { Course } from '../../models/course';
-import { debounceTime } from 'rxjs';
+import { debounceTime, distinctUntilChanged, finalize, switchMap } from 'rxjs';
 import { LoadingService } from '../../services/loading-service';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-landing',
@@ -18,6 +19,7 @@ export class Landing {
 
   courseServices = inject(CourseService);
   loadingService = inject(LoadingService);
+  toastService = inject(ToastrService);
 
   searchCourse = new FormControl('');
   //courses came from api
@@ -27,34 +29,30 @@ export class Landing {
   ngOnInit(){
     this.loadingService.isLoading$.next(true);
     
-    this.courseServices.getAllCourses().subscribe(res=>{
+    this.courseServices.getAllCourses()
+    .pipe(
+      finalize(()=>this.loadingService.isLoading$.next(false))
+    )
+    .subscribe(res=>{
       this.courses.set(res.result.courses);
-      this.loadingService.isLoading$.next(false);
     })
     
-    // this.searchCourse.valueChanges.pipe(
-    //   debounceTime(300)
-    // ).subscribe(res=>{
-    //     this.loadingService.isLoading$.next(true);
-    //     console.log(res);
-    //     this.courseServices.getAllCourses(res??'').subscribe(response=>{
-    //     this.courses.set(response.result);
-    //     this.loadingService.isLoading$.next(false);
-    //   })
-    // })
-
-
     this.searchCourse.valueChanges.pipe(
-      debounceTime(300)
-    ).subscribe(res=>{
-      this.loadingService.isLoading$.next(true);
-      console.log(res);
-        this.courseServices.getAllCourses(1,res??'').subscribe(response=>{
-          this.courses.set(response.result.courses);
-          this.loadingService.isLoading$.next(false);
-        })
-      }
+      debounceTime(300),
+      distinctUntilChanged(),
+      switchMap((res)=>this.courseServices.getAllCourses(1,res??''))
     )
+    .pipe(
+      finalize(()=>this.loadingService.isLoading$.next(false))
+    )
+    .subscribe({
+      next:response=>{
+        this.courses.set(response.result.courses);
+      },
+      error:err=>{
+        this.toastService.error(err?.error?.message??"Error while searching course");
+      }
+    })
   }
   
   // Partnars came form api

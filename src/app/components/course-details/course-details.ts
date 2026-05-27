@@ -9,7 +9,6 @@ import { ToastrService } from 'ngx-toastr';
 import { UserService } from '../../services/user-service';
 import { combineLatest, map, Observable } from 'rxjs';
 import { TokenService } from '../../services/token-service';
-import { toObservable } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 
 @Component({
@@ -36,11 +35,11 @@ export class CourseDetails {
 
   setRating(ratingValue: number) {
     this.currentRating.set(ratingValue);
-    console.log('Captured rating:', this.currentRating());
   }
+
   reviewText = signal<string>('');
 
-  marksArray=signal<{[key:string]:number}|null>(null);
+  marksArray=signal<{quizResults:{[key:string]:any[]}, assignmentResults:{[key:string]:number}}|null>(null);
 
   ngOnInit() {
     this.courseId1 = this.activatedRoute.snapshot.params['courseId'];
@@ -50,14 +49,15 @@ export class CourseDetails {
     }
     this.courseService.getCourseById(this.courseId1, user?._id??'').subscribe(res => {
       this.selectedCourse.set(res.result);
+      debugger;
     })
     if(user && user.role==="STUDENT"){
-      this.assignmentService.getMarks(this.courseId1).subscribe(
+      this.courseService.getAllResults(this.courseId1).subscribe(
         {
           next:(res)=>{
             this.marksArray.set(res.result);
           },
-          error:(err)=>{
+          error:(_)=>{
               this.toastService.error("something went wrong");
           }
         }

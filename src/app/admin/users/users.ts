@@ -3,9 +3,10 @@ import { User } from '../../models/user';
 import { UserService } from '../../services/user-service';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormControl, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { combineLatest, debounceTime, distinctUntilChanged, map, skip, skipLast, startWith, switchMap } from 'rxjs';
+import { combineLatest, debounceTime, distinctUntilChanged, finalize, startWith, switchMap, tap } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
 import { toObservable } from '@angular/core/rxjs-interop';
+import { LoadingService } from '../../services/loading-service';
 
 @Component({
   selector: 'app-users',
@@ -18,6 +19,7 @@ export class Users {
   private userService = inject(UserService);
   private toastService = inject(ToastrService);
   private formBuilder = inject(FormBuilder);
+  private loadingService = inject(LoadingService);
 
   users = signal<{users:User[], totalUsers:number}>({users:[], totalUsers:0});
   selectedRole!:string;
@@ -39,18 +41,22 @@ export class Users {
         startWith(this.searchText.value || '')
       )
     ]).pipe(
+      tap(()=>this.loadingService.isLoading$.next(true)),
       switchMap(([page, value])=>{
-        return this.userService.getUsers(this.selectedRole||'ALL', value??'', page)
+        return this.userService.getUsers(this.selectedRole||'ALL', value??'', page).pipe(
+          finalize(()=>this.loadingService.isLoading$.next(false))
+        )
       })
     )
 
   ngOnInit(){
-    this.getUser$.subscribe({
+    this.getUser$
+    .subscribe({
       next:res=>{
         this.users.set(res.result);
       },
       error:err=>{
-        this.toastService.error(err.error?.message??"Internal server Error");
+        this.toastService.error(err.error?.message??"Error while geting the users");
       }
     })
   }
@@ -60,7 +66,12 @@ export class Users {
   }
 
   getTableData = (role:string,searchVal?:string)=>{
-    this.userService.getUsers(role,searchVal).subscribe(res=>{
+    this.loadingService.isLoading$.next(true);
+    this.userService.getUsers(role,searchVal)
+    .pipe(
+      finalize(()=>this.loadingService.isLoading$.next(false))
+    )
+    .subscribe(res=>{
       this.users.set(res.result)
     });
   }
@@ -76,15 +87,19 @@ export class Users {
         this.setEditUser.set('');
         return;
       }
-      this.userService.updateUser(user._id, this.updatedRole.value??'').subscribe({
+      this.loadingService.isLoading$.next(true);
+      this.userService.updateUser(user._id, this.updatedRole.value??'')
+      .pipe(
+        finalize(()=>this.loadingService.isLoading$.next(false))
+      )
+      .subscribe({
         next:res=>{
           this.updateUserTableData(user, 'update', ind);
           this.setEditUser.set('');
           this.toastService.success(res.message);
         },
         error:err=>{
-          console.log(err);
-          this.toastService.error(err.error?.message??"Internal server Error");
+          this.toastService.error(err.error?.message??"Error while editing the user");
         }
       })
     }else{
@@ -95,14 +110,18 @@ export class Users {
 
   deleteUser(user:User){
     if(user._id){
-      this.userService.deleteUser(user._id).subscribe({
+      this.loadingService.isLoading$.next(true)
+      this.userService.deleteUser(user._id)
+      .pipe(
+        finalize(()=>this.loadingService.isLoading$.next(false))
+      )
+      .subscribe({
         next:res=>{
           this.updateUserTableData(user, 'delete');
           this.toastService.success(res.message);
         },
         error:err=>{
-          console.log(err);
-          this.toastService.error(err.error?.message??"Internal server Error");
+          this.toastService.error(err.error?.message??"Error while deleting the user");
         }
       })
     }
@@ -113,7 +132,6 @@ export class Users {
       this.users.set({users:this.users().users.filter(u=>u._id!==user._id), totalUsers:this.users().totalUsers-1});
     }else if(action==='update' && ind){
       const updatedUser = {...user, role:this.updatedRole.value??user.role};
-      debugger;
       this.users.update(usersData=>{
         return {
           ...usersData,
@@ -145,7 +163,12 @@ export class Users {
   createInstructor(){
     const {name, email} = this.instructorData.value;
     if(name && email){
-      this.userService.addInstructor({name, email}).subscribe({
+      this.loadingService.isLoading$.next(true)
+      this.userService.addInstructor({name, email})
+      .pipe(
+        finalize(()=>this.loadingService.isLoading$.next(false))
+      )
+      .subscribe({
         next:res=>{
           this.users.update(uarr=>{
             uarr.users = [res.result, ...uarr.users];
@@ -155,7 +178,7 @@ export class Users {
           this.toastService.success(res.message);
         },
         error:err=>{
-          this.toastService.error(err?.error?.message || "Internal server error");
+          this.toastService.error(err?.error?.message || "Error while creating instructor");
         }
       })
     }

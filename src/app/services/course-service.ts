@@ -19,8 +19,6 @@ export class CourseService {
   instructorCoursesList$ = new BehaviorSubject<{id:string, title:string, category:string}[]|null>(null);
   studentCourses$=new BehaviorSubject<EnrolledCourse[]|null>(null);
 
-  catalogCourses$ = new BehaviorSubject<Course[]>([]);
-
   getAllCourses(pageNumber?:number, title?:string,instructor?:string):Observable<{result:{courses:Course[], totalCourses:number},message:string}>{
     let params = new HttpParams();
     if(title && title.length>0){
@@ -42,6 +40,11 @@ export class CourseService {
     }
     return this.httpClient.get<{result:{course:Course,assignments:Assignments[], quizzes:any[], totalEnrollments:number, isEnrolled:boolean}, message:string}>(this.apiServices.getFullUrl(`course/${courseId}`), {params})
   }
+
+  getAllResults(courseId:string):Observable<{result:{quizResults:{[key:string]:any[]},assignmentResults:{[key:string]:number}},message:string}>{
+    return this.httpClient.get<{result:{quizResults:{[key:string]:any[]},assignmentResults:{[key:string]:number}},message:string}>(this.apiServices.getFullUrl(`student/course/${courseId}`));
+  }
+
 
   createCourse(course:Course):Observable<{result:Course, message:string}>{
     return this.httpClient.post<{result:Course, message:string}>(this.apiServices.getFullUrl("instructor/course"),course);
